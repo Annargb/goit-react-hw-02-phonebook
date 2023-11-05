@@ -1,16 +1,112 @@
-export const App = () => {
-  return (
-    <div
-      style={{
-        height: '100vh',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        fontSize: 40,
-        color: '#010101'
-      }}
-    >
-      React homework template
-    </div>
-  );
-};
+import { Component } from 'react';
+import { nanoid } from 'nanoid';
+import { ContactsForm } from './ContactsForm-component/ContactsForm';
+import { ContactsList } from './ContactsList-component/ContactsList';
+import { Filter } from './Filter-component/Filter';
+import { GlobalStyle } from './GlobalStyle';
+import {
+  MainTitle,
+  Section,
+  ContactsTitle,
+  Wrapper,
+  AccentMainTitle,
+} from './App.styled';
+import { InfoMessage } from './InfoMessage-component/InfoMessage';
+
+export class App extends Component {
+  state = {
+    contacts: [
+      { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
+      { id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
+      { id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
+      { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
+    ],
+    filter: '',
+  };
+
+  addContact = newContact => {
+    const contact = {
+      ...newContact,
+      id: nanoid(),
+    };
+
+    const contactAlreadyExist = this.state.contacts.some(
+      item => item.name === newContact.name
+    );
+
+    contactAlreadyExist
+      ? alert(`${newContact.name} is already in contacts!`)
+      : this.setState(prevState => {
+          return {
+            contacts: [...prevState.contacts, contact],
+          };
+        });
+  };
+
+  contactsFilter = searchContact => {
+    this.setState({ filter: searchContact });
+  };
+
+  deleteContact = contactId => {
+    this.setState(prevState => {
+      return {
+        contacts: prevState.contacts.filter(item => item.id !== contactId),
+      };
+    });
+  };
+
+  render() {
+    const { contacts, filter } = this.state;
+
+    const visibleContacts = contacts.filter(contact =>
+      contact.name.toLowerCase().includes(filter.toLowerCase().trim())
+    );
+
+    const variantOfText = () => {
+      if (!contacts.length) {
+        return (
+          <InfoMessage
+            text="There are no contacts here 😲"
+            $variant="primary"
+          />
+        );
+      } else if (contacts.length && !visibleContacts.length) {
+        return (
+          <>
+            <Filter filter={filter} onUpdateContacts={this.contactsFilter} />
+            <InfoMessage
+              text="Sorry, we didn't find any contacts for this request 😢"
+              $variant="secondary"
+            />
+          </>
+        );
+      } else {
+        return (
+          <>
+            <Filter filter={filter} onUpdateContacts={this.contactsFilter} />
+            <ContactsList
+              contacts={visibleContacts}
+              onDelete={this.deleteContact}
+            />
+          </>
+        );
+      }
+    };
+
+    return (
+      <Wrapper>
+        <Section>
+          <MainTitle>
+            Phone<AccentMainTitle>book</AccentMainTitle>
+          </MainTitle>
+          <ContactsForm onAddContacts={this.addContact} />
+        </Section>
+        <Section>
+          <ContactsTitle>Contacts</ContactsTitle>
+          {variantOfText()}
+        </Section>
+        <GlobalStyle />
+      </Wrapper>
+    );
+  }
+}
