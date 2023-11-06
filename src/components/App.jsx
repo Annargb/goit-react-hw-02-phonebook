@@ -26,7 +26,7 @@ export class App extends Component {
     };
 
     const contactAlreadyExist = this.state.contacts.some(
-      item => item.name === newContact.name
+      item => item.name.toLowerCase() === newContact.name.toLowerCase()
     );
 
     contactAlreadyExist
